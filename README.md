@@ -1,114 +1,65 @@
 # Rick and Morty Character Search
 
-An Android application built with Kotlin and Jetpack Compose that allows users to search for characters from the Rick and Morty API.
+An Android application for searching Rick and Morty characters with real-time filtering and smooth animations.
 
 ## Features
 
 ✨ **Core Features:**
 - Real-time character search with debounced API calls
-- **Advanced filtering** by status, species, and type
+- Advanced filtering by status, species, and type
 - Grid display of character cards with images
 - Detailed character view with comprehensive information
-- **Animated image transitions** between grid and detail views
-- Share character information and images
+- Animated image transitions between screens
+- Share character information via Android share sheet
 - Loading states and error handling
-- Clean, Material Design 3 UI
+- Material Design 3 UI
 
 ## Tech Stack
 
 - **Language:** Kotlin
 - **UI:** Jetpack Compose with Material3
-- **Architecture:** MVVM (Model-View-ViewModel)
+- **Architecture:** MVVM with Repository pattern
 - **Networking:** Retrofit with Kotlinx Serialization
 - **Image Loading:** Coil
 - **Navigation:** Navigation Compose
 - **Async:** Kotlin Coroutines & Flow
-- **Testing:** JUnit, MockK, Coroutines Test
+- **Testing:** JUnit, MockK, Compose Testing (29 tests total)
 
 ## Architecture
 
-The app follows the **MVVM architecture pattern** with clear separation of concerns:
-
 ```
-app/
-├── data/
-│   ├── api/              # Retrofit API interface and configuration
-│   ├── model/            # Data models
-│   └── repository/       # Repository layer for data operations
-├── ui/
-│   ├── search/          # Search screen and ViewModel
-│   ├── detail/          # Detail screen
-│   ├── navigation/      # Navigation setup
-│   └── theme/           # App theme and styling
-└── MainActivity.kt      # App entry point
-```
-
-### Key Design Decisions
-
-1. **Repository Pattern**: Abstracts data sources and provides a clean API for the ViewModel
-2. **StateFlow**: Used for reactive state management between ViewModel and UI
-3. **Debounced Search**: 300ms debounce to reduce API calls while typing
-4. **Proper Error Handling**: Result types and sealed interfaces for type-safe state management
-5. **Coroutines**: All network calls run on IO dispatcher, never blocking the main thread
-6. **Single Activity**: Modern Android approach with Navigation Compose
-
-## API Integration
-
-The app uses the free Rick and Morty API:
-- **Base URL:** `https://rickandmortyapi.com/api/`
-- **Endpoint:** `GET /character/?name={query}`
-- **No API key required**
-
-## How It Works
-
-### Search Flow:
-1. User types in search bar
-2. ViewModel debounces input (300ms)
-3. Repository makes API call on IO dispatcher
-4. Results flow through StateFlow to UI
-5. UI updates reactively with Loading → Success/Error/Empty states
-
-### Navigation:
-- **Search Screen** → Tap character card → **Detail Screen**
-- Detail screen shows all character information with formatted dates
-
-## Testing
-
-### Unit Tests (12 tests)
-Comprehensive unit tests covering:
-- ViewModel state management
-- Search debouncing behavior
-- Repository API interactions
-- Error handling scenarios
-- Empty state handling
-
-**Run unit tests:**
-```bash
-./gradlew test
+┌─────────────┐
+│  UI Layer   │  SearchScreen, DetailScreen (Jetpack Compose)
+└──────┬──────┘
+       │
+┌──────▼──────┐
+│  ViewModel  │  SearchViewModel (StateFlow, Coroutines)
+└──────┬──────┘
+       │
+┌──────▼──────┐
+│ Repository  │  CharacterRepository (Data abstraction)
+└──────┬──────┘
+       │
+┌──────▼──────┐
+│  API/Data   │  Retrofit, Rick & Morty API
+└─────────────┘
 ```
 
-### UI Tests (15 tests)
-Compose UI tests covering:
-- Search screen user interactions
-- Character grid display
-- Detail screen navigation
-- Back navigation
-- Loading and error states
-- Form validation
-
-**Run UI tests:**
-```bash
-./gradlew connectedAndroidTest
-```
+**Key Design Decisions:**
+- **MVVM**: Clear separation of concerns, testable business logic
+- **Repository Pattern**: Abstracts data sources, enables caching later
+- **StateFlow**: Reactive state management, lifecycle-aware
+- **Sealed Interfaces**: Type-safe state handling
+- **ViewModelFactory**: Proper dependency injection and lifecycle management
 
 ## Building & Running
 
-### Prerequisites:
+### Prerequisites
 - Android Studio Hedgehog or later
-- JDK 11 or later
-- Android SDK with minimum API 24
+- JDK 11+
+- Android SDK (Min API 24)
 
-### Steps:
+### Steps
 1. Clone the repository
 2. Open in Android Studio
 3. Sync Gradle files
@@ -119,60 +70,106 @@ Compose UI tests covering:
 ./gradlew installDebug
 ```
 
-## Code Quality
+## Testing
 
-- ✅ No memory leaks (proper lifecycle management with ViewModels and StateFlow)
-- ✅ No blocking main thread (Coroutines with Dispatchers.IO)
-- ✅ Proper error handling (Result types and sealed interfaces)
-- ✅ Material Design 3 guidelines
-- ✅ Clean code with KDoc comments
-- ✅ Consistent naming and formatting
+**Unit Tests (12 tests):**
+```bash
+./gradlew test
+```
+- SearchViewModel state management
+- Repository API interactions
+- Error handling scenarios
+
+**UI Tests (17 tests):**
+```bash
+./gradlew connectedAndroidTest
+```
+- Search screen interactions
+- Navigation flows
+- Filter functionality
 
 ## Requirements Met
 
 ✅ Search bar at top with grid below  
-✅ Real-time search with each keystroke  
+✅ Real-time search updates  
 ✅ Progress indicator during loading  
-✅ Detail view with all required information:
-  - Name (title)
-  - Full-width image
-  - Species
-  - Status
-  - Origin
-  - Type (only if available)
-  - Formatted created date  
-✅ Unit tests covering core functionality  
-✅ **BONUS:** UI tests for user flows and interactions  
-✅ **BONUS:** Share functionality for character details  
-✅ **BONUS:** Animated shared element transitions  
-✅ **BONUS:** Advanced filtering (status, species, type)  
+✅ Detail view with all required information  
+✅ Unit tests  
 ✅ Kotlin & Jetpack Compose  
-✅ MVVM architecture  
-✅ Proper async handling with Coroutines
 
-## Dependencies
+**Extra Credit Implemented:**
+✅ UI tests (17 comprehensive tests)  
+✅ Share functionality  
+✅ Animated image transitions  
+✅ Filter options (status, species, type)  
 
-All dependencies are managed through Gradle Version Catalog (`libs.versions.toml`):
+## Time Breakdown
 
-- **Retrofit**: 2.11.0
-- **Kotlinx Serialization**: 1.7.3
-- **Coil**: 2.7.0
-- **Navigation Compose**: 2.8.5
-- **MockK**: 1.13.13
+- Core functionality (search, detail, API): ~1.5 hours
+- Filtering system: ~30 minutes
+- Animations & polish: ~30 minutes
+- Testing: ~30 minutes
 
-## Future Enhancements
+**Total: ~3 hours**
 
-Potential improvements for extended development:
-- Pagination support for large result sets
-- Caching with Room database
-- Custom type filter input
-- Landscape orientation support
-- Accessibility improvements (TalkBack, dynamic font sizes)
-- Share images directly (not just text)
-- Additional animations (list item enter/exit)
-- Filter presets/favorites
+## Code Highlights
+
+**Debounced Search:**
+```kotlin
+fun onSearchQueryChanged(query: String) {
+    searchJob?.cancel()
+    searchJob = viewModelScope.launch {
+        delay(300) // Debounce
+        searchCharacters(query)
+    }
+}
+```
+
+**Shared Element Transitions:**
+```kotlin
+SharedTransitionLayout {
+    // Smooth image animations between screens
+    .sharedBounds(
+        sharedContentState = rememberSharedContentState(key = "image-${character.id}"),
+        animatedVisibilityScope = animatedContentScope
+    )
+}
+```
+
+**Type-Safe State Management:**
+```kotlin
+sealed interface SearchUiState {
+    data object Initial : SearchUiState
+    data object Loading : SearchUiState
+    data class Success(val characters: List<Character>) : SearchUiState
+    data object Empty : SearchUiState
+    data class Error(val message: String) : SearchUiState
+}
+```
+
+## API
+
+Uses the free [Rick and Morty API](https://rickandmortyapi.com/):
+- **Endpoint:** `GET /character/?name={query}&status={status}&species={species}`
+- No API key required
+- Supports filtering by name, status, species, and type
+
+## Project Structure
+
+```
+app/src/main/java/com/example/cvstakehome/
+├── data/
+│   ├── api/          # Retrofit interface
+│   ├── model/        # Data models
+│   └── repository/   # Repository implementation
+├── ui/
+│   ├── search/       # Search screen & ViewModel
+│   ├── detail/       # Detail screen
+│   ├── navigation/   # Navigation setup
+│   └── theme/        # App theming
+└── MainActivity.kt
+```
 
 ## License
 
-This project is a code challenge submission.
-
+This is a code challenge submission.
