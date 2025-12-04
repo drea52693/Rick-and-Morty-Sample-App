@@ -28,7 +28,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,6 +35,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.cvstakehome.data.model.Character
 
@@ -48,9 +48,9 @@ fun SearchScreen(
     animatedContentScope: AnimatedVisibilityScope? = null,
     modifier: Modifier = Modifier
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-    val searchQuery by viewModel.searchQuery.collectAsState()
-    val filters by viewModel.filters.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val filters by viewModel.filters.collectAsStateWithLifecycle()
 
     Column(
         modifier = modifier.fillMaxSize()
@@ -68,7 +68,7 @@ fun SearchScreen(
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search,
-                    contentDescription = "Search icon"
+                    contentDescription = "Search"
                 )
             },
             trailingIcon = {
@@ -90,6 +90,7 @@ fun SearchScreen(
             onClearFilters = viewModel::clearFilters
         )
 
+        // MAIN CONTENT
         when (val state = uiState) {
             is SearchUiState.Initial -> {
                 EmptyState(message = "Start searching for characters")
@@ -155,13 +156,14 @@ private fun CharacterCard(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = MaterialTheme.shapes.medium
     ) {
         Column {
             val imageModifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(1f)
-            
+
             AsyncImage(
                 model = character.image,
                 contentDescription = character.name,
@@ -177,6 +179,7 @@ private fun CharacterCard(
                 },
                 contentScale = ContentScale.Crop
             )
+
             Text(
                 text = character.name,
                 style = MaterialTheme.typography.titleMedium,
@@ -236,4 +239,3 @@ private fun ErrorState(
         )
     }
 }
-

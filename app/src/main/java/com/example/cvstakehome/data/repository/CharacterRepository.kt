@@ -4,30 +4,37 @@ import com.example.cvstakehome.data.api.RickAndMortyApi
 import com.example.cvstakehome.data.model.Character
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import retrofit2.HttpException
 
 class CharacterRepository(
     private val api: RickAndMortyApi
 ) {
+
     suspend fun searchCharacters(
-        name: String,
-        status: String? = null,
-        species: String? = null,
-        type: String? = null
+        name: String?,
+        status: String?,
+        species: String?,
+        type: String?
     ): Result<List<Character>> = withContext(Dispatchers.IO) {
-        try {
-            if (name.isBlank() && status == null && species == null && type == null) {
-                return@withContext Result.success(emptyList())
-            }
-            val response = api.searchCharacters(
-                name = name.ifBlank { "" },
+
+        val queryName = name?.takeIf { it.isNotBlank() }
+
+        return@withContext runCatching {
+            api.searchCharacters(
+                name = queryName,
                 status = status,
                 species = species,
                 type = type
-            )
-            Result.success(response.results)
-        } catch (e: Exception) {
-            Result.failure(e)
+            ).results
+        }.recoverCatching { e ->
+            when (e) {
+                is HttpException -> {
+                    if (e.code() == 404) emptyList() else throw e
+                }
+                else -> throw e
+            }
         }
     }
 }
+
 

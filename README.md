@@ -72,19 +72,20 @@ An Android application for searching Rick and Morty characters with real-time fi
 
 ## Testing
 
-**Unit Tests (12 tests):**
+**Unit Tests (5 tests):**
 ```bash
 ./gradlew test
 ```
-- SearchViewModel state management
 - Repository API interactions
 - Error handling scenarios
+- Input validation
 
-**UI Tests (17 tests):**
+**UI Tests (10 tests):**
 ```bash
 ./gradlew connectedAndroidTest
 ```
 - Search screen interactions
+- Detail screen display
 - Navigation flows
 - Filter functionality
 

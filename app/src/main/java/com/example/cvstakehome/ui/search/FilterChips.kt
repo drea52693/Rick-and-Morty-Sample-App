@@ -5,6 +5,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -50,10 +51,16 @@ fun FilterBar(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable { showFilters = !showFilters }
+                    .padding(vertical = 8.dp)
+            ) {
                 Icon(
                     imageVector = Icons.Default.Settings,
-                    contentDescription = null,
+                    contentDescription = "Filters",
                     tint = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.width(8.dp))
@@ -72,14 +79,9 @@ fun FilterBar(
                 }
             }
 
-            Row {
-                if (filters.hasActiveFilters()) {
-                    TextButton(onClick = onClearFilters) {
-                        Text("Clear All")
-                    }
-                }
-                TextButton(onClick = { showFilters = !showFilters }) {
-                    Text(if (showFilters) "Hide" else "Show")
+            if (filters.hasActiveFilters()) {
+                TextButton(onClick = onClearFilters) {
+                    Text("Clear All")
                 }
             }
         }
@@ -97,9 +99,11 @@ fun FilterBar(
                     style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier.padding(bottom = 4.dp)
                 )
+
+                val statusScroll = rememberScrollState()
                 Row(
                     modifier = Modifier
-                        .horizontalScroll(rememberScrollState())
+                        .horizontalScroll(statusScroll)
                         .padding(bottom = 12.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
@@ -117,18 +121,21 @@ fun FilterBar(
                     style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier.padding(bottom = 4.dp)
                 )
+
+                val speciesScroll = rememberScrollState()
                 Row(
                     modifier = Modifier
-                        .horizontalScroll(rememberScrollState())
+                        .horizontalScroll(speciesScroll)
                         .padding(bottom = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     SpeciesFilterChip(
                         species = null,
-                        isSelected = filters.species == null,
+                        isSelected = filters.species.isNullOrBlank(),
                         onClick = { onSpeciesFilterChanged(null) }
                     )
-                    CommonSpecies.options.forEach { species ->
+
+                    CommonSpecies.forEach { species ->
                         SpeciesFilterChip(
                             species = species,
                             isSelected = filters.species == species,
@@ -190,4 +197,3 @@ private fun SpeciesFilterChip(
         modifier = modifier
     )
 }
-

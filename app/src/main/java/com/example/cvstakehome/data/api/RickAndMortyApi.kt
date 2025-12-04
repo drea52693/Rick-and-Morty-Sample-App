@@ -7,7 +7,7 @@ import retrofit2.http.Query
 interface RickAndMortyApi {
     @GET("character/")
     suspend fun searchCharacters(
-        @Query("name") name: String,
+        @Query("name") name: String?,
         @Query("status") status: String? = null,
         @Query("species") species: String? = null,
         @Query("type") type: String? = null

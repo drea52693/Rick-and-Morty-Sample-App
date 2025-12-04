@@ -2,8 +2,6 @@ package com.example.cvstakehome.ui.detail
 
 import android.content.Context
 import android.content.Intent
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -36,7 +34,6 @@ import com.example.cvstakehome.data.model.Character
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun DetailScreen(
@@ -47,7 +44,7 @@ fun DetailScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -64,7 +61,7 @@ fun DetailScreen(
                     IconButton(onClick = { shareCharacter(context, character) }) {
                         Icon(
                             imageVector = Icons.Default.Share,
-                            contentDescription = "Share character"
+                            contentDescription = "Share"
                         )
                     }
                 }
@@ -81,7 +78,7 @@ fun DetailScreen(
             val imageModifier = Modifier
                 .fillMaxWidth()
                 .height(300.dp)
-            
+
             AsyncImage(
                 model = character.image,
                 contentDescription = character.name,
@@ -105,41 +102,26 @@ fun DetailScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
             ) {
-                DetailItem(
-                    label = "Species",
-                    value = character.species
-                )
+                DetailItem(label = "Species", value = character.species)
+                Spacer(Modifier.height(12.dp))
 
-                Spacer(modifier = Modifier.height(12.dp))
+                DetailItem(label = "Status", value = character.status)
+                Spacer(Modifier.height(12.dp))
 
-                DetailItem(
-                    label = "Status",
-                    value = character.status
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                DetailItem(
-                    label = "Origin",
-                    value = character.origin.name
-                )
+                DetailItem(label = "Origin", value = character.origin.name)
+                Spacer(Modifier.height(12.dp))
 
                 if (character.type.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(12.dp))
-                    DetailItem(
-                        label = "Type",
-                        value = character.type
-                    )
+                    DetailItem(label = "Type", value = character.type)
+                    Spacer(Modifier.height(12.dp))
                 }
-
-                Spacer(modifier = Modifier.height(12.dp))
 
                 DetailItem(
                     label = "Created",
-                    value = formatDate(character.created)
+                    value = safeFormatDate(character.created)
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(Modifier.height(16.dp))
             }
         }
     }
@@ -154,8 +136,7 @@ private fun DetailItem(
     Column(modifier = modifier) {
         Text(
             text = label,
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.primary
         )
         Spacer(modifier = Modifier.height(4.dp))
@@ -166,51 +147,42 @@ private fun DetailItem(
     }
 }
 
-
-@RequiresApi(Build.VERSION_CODES.O)
-private fun formatDate(isoDate: String): String {
+private fun safeFormatDate(isoDate: String): String {
     return try {
-        val zonedDateTime = ZonedDateTime.parse(isoDate)
+        val parsed = ZonedDateTime.parse(isoDate)
         val formatter = DateTimeFormatter.ofPattern("MMMM d, yyyy 'at' h:mm a")
-        zonedDateTime.format(formatter)
+        parsed.format(formatter)
     } catch (e: Exception) {
-        isoDate // Return original if parsing fails
+        isoDate
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 private fun shareCharacter(context: Context, character: Character) {
     val shareText = buildShareText(character)
-    
-    val sendIntent = Intent().apply {
-        action = Intent.ACTION_SEND
+
+    val sendIntent = Intent(Intent.ACTION_SEND).apply {
         putExtra(Intent.EXTRA_TEXT, shareText)
-        putExtra(Intent.EXTRA_TITLE, "Check out ${character.name}!")
+        putExtra(Intent.EXTRA_TITLE, "Character: ${character.name}")
         type = "text/plain"
     }
-    
+
     val shareIntent = Intent.createChooser(sendIntent, "Share ${character.name}")
     context.startActivity(shareIntent)
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 private fun buildShareText(character: Character): String {
     return buildString {
-        appendLine("🎭 ${character.name}")
+        appendLine("Name: ${character.name}")
+        appendLine("Species: ${character.species}")
+        appendLine("Status: ${character.status}")
+        appendLine("Origin: ${character.origin.name}")
+        if (character.type.isNotEmpty()) appendLine("Type: ${character.type}")
+        appendLine("Created: ${safeFormatDate(character.created)}")
         appendLine()
-        appendLine("📊 Species: ${character.species}")
-        appendLine("💚 Status: ${character.status}")
-        appendLine("🌍 Origin: ${character.origin.name}")
-        
-        if (character.type.isNotEmpty()) {
-            appendLine("🔖 Type: ${character.type}")
-        }
-        
-        appendLine("📅 Created: ${formatDate(character.created)}")
+        appendLine("Image: ${character.image}")
         appendLine()
-        appendLine("🖼️ Image: ${character.image}")
-        appendLine()
-        appendLine("From Rick and Morty Character Search App")
+        append("From the Rick and Morty Character Search App")
     }
 }
+
 

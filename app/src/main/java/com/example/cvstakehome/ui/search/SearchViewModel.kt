@@ -4,12 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cvstakehome.data.model.Character
 import com.example.cvstakehome.data.repository.CharacterRepository
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class SearchViewModel(
     private val repository: CharacterRepository
@@ -24,72 +22,77 @@ class SearchViewModel(
     private val _filters = MutableStateFlow(CharacterFilters())
     val filters: StateFlow<CharacterFilters> = _filters.asStateFlow()
 
-    private var searchJob: Job? = null
+    init {
+        observeSearchPipeline()
+    }
 
     fun onSearchQueryChanged(query: String) {
         _searchQuery.value = query
-        performDebouncedSearch()
     }
 
     fun onStatusFilterChanged(status: StatusFilter) {
         _filters.value = _filters.value.copy(status = status)
-        performDebouncedSearch()
     }
 
     fun onSpeciesFilterChanged(species: String?) {
         _filters.value = _filters.value.copy(species = species)
-        performDebouncedSearch()
-    }
-
-    fun onTypeFilterChanged(type: String?) {
-        _filters.value = _filters.value.copy(type = type)
-        performDebouncedSearch()
     }
 
     fun clearFilters() {
         _filters.value = CharacterFilters()
-        performDebouncedSearch()
     }
 
-    private fun performDebouncedSearch() {
-        // Cancel previous search job
-        searchJob?.cancel()
-        
-        // Debounce search by 300ms
-        searchJob = viewModelScope.launch {
-            delay(300)
-            searchCharacters()
+    private fun observeSearchPipeline() {
+        combine(_searchQuery, _filters) { query, filters ->
+            SearchParams(
+                query = query.trim(),
+                filters = filters
+            )
         }
+            .debounce(300) // Real debounce
+            .onEach { params ->
+                performSearch(params)
+            }
+            .launchIn(viewModelScope)
     }
 
-    private fun searchCharacters() {
-        viewModelScope.launch {
-            _uiState.value = SearchUiState.Loading
-            
-            val query = _searchQuery.value
-            val currentFilters = _filters.value
-            
-            val result = repository.searchCharacters(
+    private suspend fun performSearch(params: SearchParams) {
+        val query = params.query
+        val filters = params.filters
+
+        if (query.isEmpty() && !filters.hasActiveFilters()) {
+            _uiState.value = SearchUiState.Initial
+            return
+        }
+
+        _uiState.value = SearchUiState.Loading
+
+        val result = withContext(Dispatchers.IO) {
+            repository.searchCharacters(
                 name = query,
-                status = currentFilters.status.apiValue,
-                species = currentFilters.species,
-                type = currentFilters.type
-            )
-            
-            _uiState.value = result.fold(
-                onSuccess = { characters ->
-                    if (characters.isEmpty()) {
-                        SearchUiState.Empty
-                    } else {
-                        SearchUiState.Success(characters)
-                    }
-                },
-                onFailure = { exception ->
-                    SearchUiState.Error(exception.message ?: "An unknown error occurred")
-                }
+                status = filters.status.apiValue,
+                species = filters.species,
+                type = filters.type
             )
         }
+
+        _uiState.value = result.fold(
+            onSuccess = { characters ->
+                when {
+                    characters.isEmpty() -> SearchUiState.Empty
+                    else -> SearchUiState.Success(characters)
+                }
+            },
+            onFailure = { e ->
+                SearchUiState.Error(e.message ?: "Unknown error occurred")
+            }
+        )
     }
+
+    private data class SearchParams(
+        val query: String,
+        val filters: CharacterFilters
+    )
 }
 
 sealed interface SearchUiState {
@@ -99,4 +102,3 @@ sealed interface SearchUiState {
     data object Empty : SearchUiState
     data class Error(val message: String) : SearchUiState
 }
-

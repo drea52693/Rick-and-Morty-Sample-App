@@ -5,17 +5,25 @@ data class CharacterFilters(
     val species: String? = null,
     val type: String? = null
 ) {
-    fun hasActiveFilters(): Boolean {
-        return status != StatusFilter.ALL || species != null || type != null
-    }
 
-    fun activeFilterCount(): Int {
-        var count = 0
-        if (status != StatusFilter.ALL) count++
-        if (species != null) count++
-        if (type != null) count++
-        return count
-    }
+    fun hasActiveFilters(): Boolean =
+        status != StatusFilter.ALL ||
+                !species.isNullOrBlank() ||
+                !type.isNullOrBlank()
+
+    fun activeFilterCount(): Int =
+        listOf(
+            status != StatusFilter.ALL,
+            !species.isNullOrBlank(),
+            !type.isNullOrBlank()
+        ).count { it }
+
+    fun toQueryMap(): Map<String, String> =
+        buildMap {
+            status.apiValue?.let { put("status", it) }
+            if (!species.isNullOrBlank()) put("species", species!!)
+            if (!type.isNullOrBlank()) put("type", type!!)
+        }
 }
 
 enum class StatusFilter(val displayName: String, val apiValue: String?) {
@@ -25,16 +33,14 @@ enum class StatusFilter(val displayName: String, val apiValue: String?) {
     UNKNOWN("Unknown", "unknown")
 }
 
-object CommonSpecies {
-    val options = listOf(
-        "Human",
-        "Alien",
-        "Humanoid",
-        "Robot",
-        "Cronenberg",
-        "Animal",
-        "Disease",
-        "Mythological Creature"
-    )
-}
+val CommonSpecies = listOf(
+    "Human",
+    "Alien",
+    "Humanoid",
+    "Robot",
+    "Cronenberg",
+    "Animal",
+    "Disease",
+    "Mythological Creature"
+)
 

@@ -15,10 +15,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
-/**
- * Unit tests for CharacterRepository.
- * Tests API interaction and error handling.
- */
 class CharacterRepositoryTest {
 
     private lateinit var api: RickAndMortyApi
@@ -42,10 +38,10 @@ class CharacterRepositoryTest {
             info = Info(count = 2, pages = 1, next = null, prev = null),
             results = mockCharacters
         )
-        coEvery { api.searchCharacters(query) } returns mockResponse
+        coEvery { api.searchCharacters(any(), any(), any(), any()) } returns mockResponse
 
         // When
-        val result = repository.searchCharacters(query)
+        val result = repository.searchCharacters(query, null, null, null)
 
         // Then
         assertTrue(result.isSuccess)
@@ -56,9 +52,14 @@ class CharacterRepositoryTest {
     fun `searchCharacters returns empty list for blank query`() = runTest {
         // Given
         val query = ""
+        val mockResponse = CharacterResponse(
+            info = Info(count = 0, pages = 0, next = null, prev = null),
+            results = emptyList()
+        )
+        coEvery { api.searchCharacters(any(), any(), any(), any()) } returns mockResponse
 
         // When
-        val result = repository.searchCharacters(query)
+        val result = repository.searchCharacters(query, null, null, null)
 
         // Then
         assertTrue(result.isSuccess)
@@ -69,9 +70,14 @@ class CharacterRepositoryTest {
     fun `searchCharacters returns empty list for whitespace query`() = runTest {
         // Given
         val query = "   "
+        val mockResponse = CharacterResponse(
+            info = Info(count = 0, pages = 0, next = null, prev = null),
+            results = emptyList()
+        )
+        coEvery { api.searchCharacters(any(), any(), any(), any()) } returns mockResponse
 
         // When
-        val result = repository.searchCharacters(query)
+        val result = repository.searchCharacters(query, null, null, null)
 
         // Then
         assertTrue(result.isSuccess)
@@ -83,10 +89,10 @@ class CharacterRepositoryTest {
         // Given
         val query = "Rick"
         val exception = Exception("Network error")
-        coEvery { api.searchCharacters(query) } throws exception
+        coEvery { api.searchCharacters(any(), any(), any(), any()) } throws exception
 
         // When
-        val result = repository.searchCharacters(query)
+        val result = repository.searchCharacters(query, null, null, null)
 
         // Then
         assertTrue(result.isFailure)
@@ -101,10 +107,10 @@ class CharacterRepositoryTest {
             info = Info(count = 0, pages = 0, next = null, prev = null),
             results = emptyList()
         )
-        coEvery { api.searchCharacters(query) } returns mockResponse
+        coEvery { api.searchCharacters(any(), any(), any(), any()) } returns mockResponse
 
         // When
-        val result = repository.searchCharacters(query)
+        val result = repository.searchCharacters(query, null, null, null)
 
         // Then
         assertTrue(result.isSuccess)
