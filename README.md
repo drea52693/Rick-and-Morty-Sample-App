@@ -91,62 +91,18 @@ An Android application for searching Rick and Morty characters with real-time fi
 
 ## Requirements Met
 
-✅ Search bar at top with grid below  
-✅ Real-time search updates  
-✅ Progress indicator during loading  
-✅ Detail view with all required information  
-✅ Unit tests  
-✅ Kotlin & Jetpack Compose  
+Search bar at top with grid below  
+Real-time search updates  
+Progress indicator during loading  
+Detail view with all required information  
+Unit tests  
+Kotlin & Jetpack Compose  
 
 **Extra Credit Implemented:**
-✅ UI tests (17 comprehensive tests)  
-✅ Share functionality  
-✅ Animated image transitions  
-✅ Filter options (status, species, type)  
-
-## Time Breakdown
-
-- Core functionality (search, detail, API): ~1.5 hours
-- Filtering system: ~30 minutes
-- Animations & polish: ~30 minutes
-- Testing: ~30 minutes
-
-**Total: ~3 hours**
-
-## Code Highlights
-
-**Debounced Search:**
-```kotlin
-fun onSearchQueryChanged(query: String) {
-    searchJob?.cancel()
-    searchJob = viewModelScope.launch {
-        delay(300) // Debounce
-        searchCharacters(query)
-    }
-}
-```
-
-**Shared Element Transitions:**
-```kotlin
-SharedTransitionLayout {
-    // Smooth image animations between screens
-    .sharedBounds(
-        sharedContentState = rememberSharedContentState(key = "image-${character.id}"),
-        animatedVisibilityScope = animatedContentScope
-    )
-}
-```
-
-**Type-Safe State Management:**
-```kotlin
-sealed interface SearchUiState {
-    data object Initial : SearchUiState
-    data object Loading : SearchUiState
-    data class Success(val characters: List<Character>) : SearchUiState
-    data object Empty : SearchUiState
-    data class Error(val message: String) : SearchUiState
-}
-```
+UI tests (17 comprehensive tests)  
+Share functionality  
+Animated image transitions  
+Filter options (status, species, type)  
 
 ## API
 
