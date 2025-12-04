@@ -4,7 +4,7 @@ An Android application for searching Rick and Morty characters with real-time fi
 
 ## Features
 
-✨ **Core Features:**
+ **Core Features:**
 - Real-time character search with debounced API calls
 - Advanced filtering by status, species, and type
 - Grid display of character cards with images
