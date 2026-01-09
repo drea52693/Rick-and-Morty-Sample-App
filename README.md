@@ -111,7 +111,3 @@ app/src/main/java/com/example/cvstakehome/
 │   └── theme/        # App theming
 └── MainActivity.kt
 ```
-
-## License
-
-This is a code challenge submission.
